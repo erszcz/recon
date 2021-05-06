@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.23.0">
+    <meta name="project" content="Recon v2.5.1">
+    <title>recon_lib — Recon v2.5.1</title>
+    <link rel="stylesheet" href="dist/erlang-8a5f731dbc512bf6261b.css" />
+    <script src="dist/sidebar_items-c5a87438ae.js"></script>
+      <script src="docs_config.js"></script>
+    <script async src="dist/app-60a0c9f10e9e52eae31f.js"></script>
+  </head>
+  <body data-type="modules">
+    <script>try { if(localStorage.getItem('night-mode') === 'true') document.body.className += ' night-mode'; } catch (e) { }</script>
+<div class="main">
+
+<button class="sidebar-button sidebar-toggle">
+  <span class="icon-menu" title="Collapse/expand sidebar"></span>
+</button>
+
+<section class="sidebar">
+  <form class="sidebar-search" action="search.html">
+    <button type="submit" class="search-button" aria-label="Submit Search">
+      <span class="icon-search" aria-hidden="true" title="Submit search"></span>
+    </button>
+    <button type="button" tabindex="-1" class="search-close-button" aria-label="Cancel Search">
+      <span class="icon-cross" aria-hidden="true" title="Cancel search"></span>
+    </button>
+    <label class="search-label">
+      <input name="q" type="text" id="search-list" class="search-input" placeholder="Search..." aria-label="Input your search terms" autocomplete="off" />
+    </label>
+  </form>
+
+  <div class="autocomplete">
+    <div class="autocomplete-results">
+    </div>
+  </div>
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectDetails">
+      <a href="recon.html" class="sidebar-projectName">
+Recon      </a>
+      <strong class="sidebar-projectVersion">
+        v2.5.1
+      </strong>
+    </div>
+  </div>
+
+  <ul class="sidebar-listNav">
+    <li><a id="extras-list" href="#full-list">Pages</a></li>
+
+      <li><a id="modules-list" href="#full-list">Modules</a></li>
+
+  </ul>
+  <div class="gradient"></div>
+  <ul id="full-list" class="sidebar-fullList"></ul>
+</section>
+
+<section class="content">
+  <div class="content-outer">
+    <div id="content" class="content-inner">
+
+      <h1>
+        recon_lib <small class="app-vsn">(Recon v2.5.1)</small>
+      </h1>
+
+
+        <section id="moduledoc">
+Regroups useful functionality used by recon when dealing with data from the node. The functions in this module allow quick runtime access to fancier behaviour than what would be done using recon module itself.        </section>
+
+        <section id="summary" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#summary">
+              <span class="icon-link" aria-hidden="true"></span>
+              <span class="sr-only">Link to this section</span>
+            </a>
+            Summary
+          </h1>
+  <div class="summary-types summary">
+    <h2>
+      <a href="#types">Types</a>
+    </h2>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:diff/0">diff()</a>
+  </div>
+</div>
+  </div>
+  <div class="summary-functions summary">
+    <h2>
+      <a href="#functions">Functions</a>
+    </h2>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#count/1">count(Terms)</a>
+  </div>
+    <div class="summary-synopsis">Takes a list of terms, and counts how often each of them appears in the list. The list returned is in no particular order.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#inet_attrs/1">inet_attrs(AttrName)</a>
+  </div>
+    <div class="summary-synopsis">Returns the attributes (<a href="recon#inet_attrs/0" rel="https://erlang.org/doc/link/seetype"><code>recon:inet_attrs()</code></a>) of all inet ports (UDP, SCTP, TCP) of the node.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#inet_attrs/2">inet_attrs(AttributeName, Port)</a>
+  </div>
+    <div class="summary-synopsis">Returns the attributes required for a given inet port (UDP, SCTP, TCP). This form of attributes is standard for most comparison functions for processes in recon.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#insert/2">insert(E, H)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#merge/2">merge(H1, H2)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#merge_pairs/1">merge_pairs(T)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#pheap_fill/3">pheap_fill(List, N, Heap)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#pheap_full/2">pheap_full(T, Heap)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#pheap_to_list/2">pheap_to_list(T, Acc)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#port_list/1">port_list(Attr)</a>
+  </div>
+    <div class="summary-synopsis">Returns a list of all the open ports in the VM, coupled with one of the properties desired from <code>erlang:port_info/1-2</code>.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#port_list/2">port_list(Attr, Val)</a>
+  </div>
+    <div class="summary-synopsis">Returns a list of all the open ports in the VM, but only if the <code>Attr</code>'s resulting value matches <code>Val</code>. <code>Attr</code> must be a property accepted by <code>erlang:port_info/2</code>.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#proc_attrs/1">proc_attrs(AttrName)</a>
+  </div>
+    <div class="summary-synopsis">Returns the attributes (<a href="recon#proc_attrs/0" rel="https://erlang.org/doc/link/seetype"><code>recon:proc_attrs()</code></a>) of all processes of the node, except the caller.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#proc_attrs/2">proc_attrs(AttrName, Pid)</a>
+  </div>
+    <div class="summary-synopsis"><p>Returns the attributes of a given process. This form of attributes is standard for most comparison functions for processes in recon.</p></div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#sample/2">sample(Ms, Fun)</a>
+  </div>
+    <div class="summary-synopsis">Runs a fun once, waits <code>Ms</code>, runs the fun again, and returns both results.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#scheduler_usage_diff/2">scheduler_usage_diff(SchedTime, SchedTime)</a>
+  </div>
+    <div class="summary-synopsis">Diffs two runs of erlang:statistics(scheduler_wall_time) and returns usage metrics in terms of cores and 0..1 percentages.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#sliding_window/2">sliding_window(First, Last)</a>
+  </div>
+    <div class="summary-synopsis">Compare two samples and return a list based on some key. The type mentioned for the structure is <code>diff()</code> (<code>{Key,Val,Other}</code>), which is compatible with the <a href="recon#proc_attrs/0" rel="https://erlang.org/doc/link/seetype"><code>recon:proc_attrs()</code></a> type.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#sublist_top_n_attrs/2">sublist_top_n_attrs(List, Len)</a>
+  </div>
+    <div class="summary-synopsis">Returns the top n element of a list of process or inet attributes</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#term_to_pid/1">term_to_pid(Pid)</a>
+  </div>
+    <div class="summary-synopsis">Transforms a given term to a pid.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#term_to_port/1">term_to_port(Port)</a>
+  </div>
+    <div class="summary-synopsis">Transforms a given term to a port</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#time_fold/6">time_fold(N, Interval, Fun, State, FoldFun, Init)</a>
+  </div>
+    <div class="summary-synopsis">Calls a given function every <code>Interval</code> milliseconds and supports a fold-like interface (each result is modified and accumulated)</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#time_map/5">time_map(N, Interval, Fun, State, MapFun)</a>
+  </div>
+    <div class="summary-synopsis">Calls a given function every <code>Interval</code> milliseconds and supports a map-like interface (each result is modified and returned)</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#triple_to_pid/3">triple_to_pid(N, N, N)</a>
+  </div>
+    <div class="summary-synopsis">Equivalent of <code>pid(X,Y,Z)</code> in the Erlang shell.</div>
+</div>
+  </div>
+        </section>
+
+        <section id="types" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#types">
+              <span class="icon-link" aria-hidden="true"></span>
+              <span class="sr-only">Link to this section</span>
+            </a>
+Types          </h1>
+          <div class="types-list">
+<section class="detail" id="t:diff/0">
+  <div class="detail-header">
+    <a href="#t:diff/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">diff()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_lib.diff/0</pre>
+      </div>
+
+  </section>
+</section>
+          </div>
+        </section>
+        <section id="functions" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#functions">
+              <span class="icon-link" aria-hidden="true"></span>
+              <span class="sr-only">Link to this section</span>
+            </a>
+Functions          </h1>
+          <div class="functions-list">
+<section class="detail" id="count/1">
+  <div class="detail-header">
+    <a href="#count/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">count(Terms)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.count/1</pre>
+      </div>
+
+Takes a list of terms, and counts how often each of them appears in the list. The list returned is in no particular order.  </section>
+</section>
+<section class="detail" id="inet_attrs/1">
+  <div class="detail-header">
+    <a href="#inet_attrs/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">inet_attrs(AttrName)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.inet_attrs/1</pre>
+      </div>
+
+Returns the attributes (<a href="recon#inet_attrs/0" rel="https://erlang.org/doc/link/seetype"><code>recon:inet_attrs()</code></a>) of all inet ports (UDP, SCTP, TCP) of the node.  </section>
+</section>
+<section class="detail" id="inet_attrs/2">
+  <div class="detail-header">
+    <a href="#inet_attrs/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">inet_attrs(AttributeName, Port)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.inet_attrs/2</pre>
+      </div>
+
+Returns the attributes required for a given inet port (UDP, SCTP, TCP). This form of attributes is standard for most comparison functions for processes in recon.  </section>
+</section>
+<section class="detail" id="insert/2">
+  <div class="detail-header">
+    <a href="#insert/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">insert(E, H)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="merge/2">
+  <div class="detail-header">
+    <a href="#merge/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">merge(H1, H2)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="merge_pairs/1">
+  <div class="detail-header">
+    <a href="#merge_pairs/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">merge_pairs(T)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="pheap_fill/3">
+  <div class="detail-header">
+    <a href="#pheap_fill/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">pheap_fill(List, N, Heap)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="pheap_full/2">
+  <div class="detail-header">
+    <a href="#pheap_full/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">pheap_full(T, Heap)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="pheap_to_list/2">
+  <div class="detail-header">
+    <a href="#pheap_to_list/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">pheap_to_list(T, Acc)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="port_list/1">
+  <div class="detail-header">
+    <a href="#port_list/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">port_list(Attr)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.port_list/1</pre>
+      </div>
+
+Returns a list of all the open ports in the VM, coupled with one of the properties desired from <code>erlang:port_info/1-2</code>.  </section>
+</section>
+<section class="detail" id="port_list/2">
+  <div class="detail-header">
+    <a href="#port_list/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">port_list(Attr, Val)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.port_list/2</pre>
+      </div>
+
+Returns a list of all the open ports in the VM, but only if the <code>Attr</code>'s resulting value matches <code>Val</code>. <code>Attr</code> must be a property accepted by <code>erlang:port_info/2</code>.  </section>
+</section>
+<section class="detail" id="proc_attrs/1">
+  <div class="detail-header">
+    <a href="#proc_attrs/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">proc_attrs(AttrName)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.proc_attrs/1</pre>
+      </div>
+
+Returns the attributes (<a href="recon#proc_attrs/0" rel="https://erlang.org/doc/link/seetype"><code>recon:proc_attrs()</code></a>) of all processes of the node, except the caller.  </section>
+</section>
+<section class="detail" id="proc_attrs/2">
+  <div class="detail-header">
+    <a href="#proc_attrs/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">proc_attrs(AttrName, Pid)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.proc_attrs/2</pre>
+      </div>
+
+<p>Returns the attributes of a given process. This form of attributes is standard for most comparison functions for processes in recon.</p>A special attribute is <code>binary_memory</code>, which will reduce the memory used by the process for binary data on the global heap.  </section>
+</section>
+<section class="detail" id="sample/2">
+  <div class="detail-header">
+    <a href="#sample/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">sample(Ms, Fun)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.sample/2</pre>
+      </div>
+
+Runs a fun once, waits <code>Ms</code>, runs the fun again, and returns both results.  </section>
+</section>
+<section class="detail" id="scheduler_usage_diff/2">
+  <div class="detail-header">
+    <a href="#scheduler_usage_diff/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">scheduler_usage_diff(SchedTime, SchedTime)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.scheduler_usage_diff/2</pre>
+      </div>
+
+Diffs two runs of erlang:statistics(scheduler_wall_time) and returns usage metrics in terms of cores and 0..1 percentages.  </section>
+</section>
+<section class="detail" id="sliding_window/2">
+  <div class="detail-header">
+    <a href="#sliding_window/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">sliding_window(First, Last)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.sliding_window/2</pre>
+      </div>
+
+Compare two samples and return a list based on some key. The type mentioned for the structure is <code>diff()</code> (<code>{Key,Val,Other}</code>), which is compatible with the <a href="recon#proc_attrs/0" rel="https://erlang.org/doc/link/seetype"><code>recon:proc_attrs()</code></a> type.  </section>
+</section>
+<section class="detail" id="sublist_top_n_attrs/2">
+  <div class="detail-header">
+    <a href="#sublist_top_n_attrs/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">sublist_top_n_attrs(List, Len)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.sublist_top_n_attrs/2</pre>
+      </div>
+
+Returns the top n element of a list of process or inet attributes  </section>
+</section>
+<section class="detail" id="term_to_pid/1">
+  <div class="detail-header">
+    <a href="#term_to_pid/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">term_to_pid(Pid)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.term_to_pid/1</pre>
+      </div>
+
+Transforms a given term to a pid.  </section>
+</section>
+<section class="detail" id="term_to_port/1">
+  <div class="detail-header">
+    <a href="#term_to_port/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">term_to_port(Port)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.term_to_port/1</pre>
+      </div>
+
+Transforms a given term to a port  </section>
+</section>
+<section class="detail" id="time_fold/6">
+  <div class="detail-header">
+    <a href="#time_fold/6" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">time_fold(N, Interval, Fun, State, FoldFun, Init)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.time_fold/6</pre>
+      </div>
+
+Calls a given function every <code>Interval</code> milliseconds and supports a fold-like interface (each result is modified and accumulated)  </section>
+</section>
+<section class="detail" id="time_map/5">
+  <div class="detail-header">
+    <a href="#time_map/5" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">time_map(N, Interval, Fun, State, MapFun)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.time_map/5</pre>
+      </div>
+
+Calls a given function every <code>Interval</code> milliseconds and supports a map-like interface (each result is modified and returned)  </section>
+</section>
+<section class="detail" id="triple_to_pid/3">
+  <div class="detail-header">
+    <a href="#triple_to_pid/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">triple_to_pid(N, N, N)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_lib.triple_to_pid/3</pre>
+      </div>
+
+Equivalent of <code>pid(X,Y,Z)</code> in the Erlang shell.  </section>
+</section>
+          </div>
+        </section>
+      <footer class="footer">
+        <p>
+          <span class="line">
+            Built using
+            <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener">ExDoc</a> (v0.23.0) for the
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank">Elixir programming language</a>.
+          </span>
+          <span class="line">
+            Designed by
+            <a href="https://twitter.com/dignifiedquire" target="_blank" rel="noopener" title="@dignifiedquire">Friedel Ziegelmayer</a>.
+          </span>
+        </p>
+        <p>
+            <a href="api-reference.html" title="API reference" class="line footer-button">API Reference</a>
+          <button class="line footer-button display-shortcuts-help">
+            Display keyboard shortcuts
+          </button>
+          <button class="line footer-button night-mode-toggle">
+            Toggle night mode
+          </button>
+          <button class="line footer-button display-quick-switch">
+            Go to a HexDocs package
+          </button>
+          <button class="line footer-button tooltips-toggle">
+            <span class="tooltips-option-disable">Disable tooltips</span>
+            <span class="tooltips-option-enable">Enable tooltips</span>
+          </button>
+        </p>
+      </footer>
+    </div>
+  </div>
+</section>
+</div>
+  </body>
+</html>

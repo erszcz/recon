@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.23.0">
+    <meta name="project" content="Recon v2.5.1">
+    <title>API Reference — Recon v2.5.1</title>
+    <link rel="stylesheet" href="dist/erlang-8a5f731dbc512bf6261b.css" />
+    <script src="dist/sidebar_items-c5a87438ae.js"></script>
+      <script src="docs_config.js"></script>
+    <script async src="dist/app-60a0c9f10e9e52eae31f.js"></script>
+  </head>
+  <body data-type="extras">
+    <script>try { if(localStorage.getItem('night-mode') === 'true') document.body.className += ' night-mode'; } catch (e) { }</script>
+<div class="main">
+
+<button class="sidebar-button sidebar-toggle">
+  <span class="icon-menu" title="Collapse/expand sidebar"></span>
+</button>
+
+<section class="sidebar">
+  <form class="sidebar-search" action="search.html">
+    <button type="submit" class="search-button" aria-label="Submit Search">
+      <span class="icon-search" aria-hidden="true" title="Submit search"></span>
+    </button>
+    <button type="button" tabindex="-1" class="search-close-button" aria-label="Cancel Search">
+      <span class="icon-cross" aria-hidden="true" title="Cancel search"></span>
+    </button>
+    <label class="search-label">
+      <input name="q" type="text" id="search-list" class="search-input" placeholder="Search..." aria-label="Input your search terms" autocomplete="off" />
+    </label>
+  </form>
+
+  <div class="autocomplete">
+    <div class="autocomplete-results">
+    </div>
+  </div>
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectDetails">
+      <a href="recon.html" class="sidebar-projectName">
+Recon      </a>
+      <strong class="sidebar-projectVersion">
+        v2.5.1
+      </strong>
+    </div>
+  </div>
+
+  <ul class="sidebar-listNav">
+    <li><a id="extras-list" href="#full-list">Pages</a></li>
+
+      <li><a id="modules-list" href="#full-list">Modules</a></li>
+
+  </ul>
+  <div class="gradient"></div>
+  <ul id="full-list" class="sidebar-fullList"></ul>
+</section>
+
+<section class="content">
+  <div class="content-outer">
+    <div id="content" class="content-inner">
+
+<h1>
+  API Reference <small class="app-vsn">Recon v2.5.1</small>
+</h1>
+
+  <section class="details-list">
+    <h2 id="modules" class="section-heading">
+  <a href="#modules" class="hover-link"><span class="icon-link" aria-hidden="true"></span></a>
+  Modules
+</h2>
+
+    <div class="summary">
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="recon.html">recon</a>
+  </div>
+    <div class="summary-synopsis"><p>Recon, as a module, provides access to the high-level functionality contained in the Recon application.</p></div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="recon_alloc.html">recon_alloc</a>
+  </div>
+    <div class="summary-synopsis"><p>Functions to deal with <a href="http://www.erlang.org/doc/man/erts_alloc.html">Erlang's memory allocators</a>, or particularly, to try to present the allocator data in a way that makes it simpler to discover possible problems.</p></div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="recon_lib.html">recon_lib</a>
+  </div>
+    <div class="summary-synopsis">Regroups useful functionality used by recon when dealing with data from the node. The functions in this module allow quick runtime access to fancier behaviour than what would be done using recon module itself.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="recon_map.html">recon_map</a>
+  </div>
+    <div class="summary-synopsis">This module handles formatting maps. It allows for trimming output to selected fields, or to nothing at all. It also adds a label to a printout. To set up a limit for a map, you need to give recon a way to tell the map you want to trim from all the other maps, so you have to provide something like a 'type definition'. It can be either another map which is compared to the arg, or a fun.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="recon_rec.html">recon_rec</a>
+  </div>
+    <div class="summary-synopsis">This module handles formatting records for known record types. Record definitions are imported from modules by user. Definitions are distinguished by record name and its arity, if you have multiple records of the same name and size, you have to choose one of them and some of your records may be wrongly labelled. You can manipulate your definition list by using import/1 and clear/1, and check which definitions are in use by executing list/0.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="recon_trace.html">recon_trace</a>
+  </div>
+    <div class="summary-synopsis"><p><code>recon_trace</code> is a module that handles tracing in a safe manner for single Erlang nodes, currently for function calls only. Functionality includes</p></div>
+</div>
+    </div>
+  </section>
+
+      <footer class="footer">
+        <p>
+          <span class="line">
+            Built using
+            <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener">ExDoc</a> (v0.23.0) for the
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank">Elixir programming language</a>.
+          </span>
+          <span class="line">
+            Designed by
+            <a href="https://twitter.com/dignifiedquire" target="_blank" rel="noopener" title="@dignifiedquire">Friedel Ziegelmayer</a>.
+          </span>
+        </p>
+        <p>
+            <a href="api-reference.html" title="API reference" class="line footer-button">API Reference</a>
+          <button class="line footer-button display-shortcuts-help">
+            Display keyboard shortcuts
+          </button>
+          <button class="line footer-button night-mode-toggle">
+            Toggle night mode
+          </button>
+          <button class="line footer-button display-quick-switch">
+            Go to a HexDocs package
+          </button>
+          <button class="line footer-button tooltips-toggle">
+            <span class="tooltips-option-disable">Disable tooltips</span>
+            <span class="tooltips-option-enable">Enable tooltips</span>
+          </button>
+        </p>
+      </footer>
+    </div>
+  </div>
+</section>
+</div>
+  </body>
+</html>

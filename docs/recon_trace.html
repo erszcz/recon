@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.23.0">
+    <meta name="project" content="Recon v2.5.1">
+    <title>recon_trace — Recon v2.5.1</title>
+    <link rel="stylesheet" href="dist/erlang-8a5f731dbc512bf6261b.css" />
+    <script src="dist/sidebar_items-c5a87438ae.js"></script>
+      <script src="docs_config.js"></script>
+    <script async src="dist/app-60a0c9f10e9e52eae31f.js"></script>
+  </head>
+  <body data-type="modules">
+    <script>try { if(localStorage.getItem('night-mode') === 'true') document.body.className += ' night-mode'; } catch (e) { }</script>
+<div class="main">
+
+<button class="sidebar-button sidebar-toggle">
+  <span class="icon-menu" title="Collapse/expand sidebar"></span>
+</button>
+
+<section class="sidebar">
+  <form class="sidebar-search" action="search.html">
+    <button type="submit" class="search-button" aria-label="Submit Search">
+      <span class="icon-search" aria-hidden="true" title="Submit search"></span>
+    </button>
+    <button type="button" tabindex="-1" class="search-close-button" aria-label="Cancel Search">
+      <span class="icon-cross" aria-hidden="true" title="Cancel search"></span>
+    </button>
+    <label class="search-label">
+      <input name="q" type="text" id="search-list" class="search-input" placeholder="Search..." aria-label="Input your search terms" autocomplete="off" />
+    </label>
+  </form>
+
+  <div class="autocomplete">
+    <div class="autocomplete-results">
+    </div>
+  </div>
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectDetails">
+      <a href="recon.html" class="sidebar-projectName">
+Recon      </a>
+      <strong class="sidebar-projectVersion">
+        v2.5.1
+      </strong>
+    </div>
+  </div>
+
+  <ul class="sidebar-listNav">
+    <li><a id="extras-list" href="#full-list">Pages</a></li>
+
+      <li><a id="modules-list" href="#full-list">Modules</a></li>
+
+  </ul>
+  <div class="gradient"></div>
+  <ul id="full-list" class="sidebar-fullList"></ul>
+</section>
+
+<section class="content">
+  <div class="content-outer">
+    <div id="content" class="content-inner">
+
+      <h1>
+        recon_trace <small class="app-vsn">(Recon v2.5.1)</small>
+      </h1>
+
+
+        <section id="moduledoc">
+<p><code>recon_trace</code> is a module that handles tracing in a safe manner for single Erlang nodes, currently for function calls only. Functionality includes:</p><ul><li>Nicer to use interface (arguably) than <code>dbg</code> or trace BIFs.</li><li>Protection against dumb decisions (matching all calls on a node being traced, for example)</li><li>Adding safe guards in terms of absolute trace count or rate-limitting</li><li>Nicer formatting than default traces</li></ul><h3 id="module-tracing-erlang-code" class="section-heading">
+  <a href="#module-tracing-erlang-code" class="hover-link"><span class="icon-link" aria-hidden="true"></span></a>
+  <a name="Tracing_Erlang_Code">Tracing Erlang Code</a>
+</h3>
+<p>The Erlang Trace BIFs allow to trace any Erlang code at all. They work in two parts: pid specifications, and trace patterns.</p><p>Pid specifications let you decide which processes to target. They can be specific pids, <code>all</code> pids, <code>existing</code> pids, or <code>new</code> pids (those not spawned at the time of the function call).</p><p>The trace patterns represent functions. Functions can be specified in two parts: specifying the modules, functions, and arguments, and then with Erlang match specifications to add constraints to arguments (see <a href="#calls/3" rel="https://erlang.org/doc/link/seemfa"><code>calls/3</code></a> for details).</p><p>What defines whether you get traced or not is the intersection of both:</p><pre>           _,--------,_      _,--------,_
+        ,-'            `-,,-'            `-,
+     ,-'              ,-'  '-,              `-,
+    |   Matching    -'        '-   Matching    |
+    |     Pids     |  Getting   |    Trace     |
+    |              |   Traced   |  Patterns    |
+    |               -,        ,-               |
+     '-,              '-,  ,-'              ,-'
+        '-,_          _,-''-,_          _,-'
+            '--------'        '--------'</pre><p>If either the pid specification excludes a process or a trace pattern excludes a given call, no trace will be received.</p><h3 id="module-example-session" class="section-heading">
+  <a href="#module-example-session" class="hover-link"><span class="icon-link" aria-hidden="true"></span></a>
+  <a name="Example_Session">Example Session</a>
+</h3>
+<p>First let's trace the <code>queue:new</code> functions in any process:</p><pre>   1&gt; recon_trace:calls({queue, new, '_'}, 1).
+   1
+   13:14:34.086078 &lt;0.44.0&gt; queue:new()
+   Recon tracer rate limit tripped.</pre><p>The limit was set to <code>1</code> trace message at most, and <code>recon</code> let us know when that limit was reached.</p><p>Let's instead look for all the <code>queue:in/2</code> calls, to see what it is we're inserting in queues:</p><pre>   2&gt; recon_trace:calls({queue, in, 2}, 1).
+   1
+   13:14:55.365157 &lt;0.44.0&gt; queue:in(a, {[],[]})
+   Recon tracer rate limit tripped.</pre><p>In order to see the content we want, we should change the trace patterns to use a <code>fun</code> that matches on all arguments in a list (<code>_</code>) and returns <code>return_trace()</code>. This last part will generate a second trace for each call that includes the return value:</p><pre>   3&gt; recon_trace:calls({queue, in, fun(_) -&gt; return_trace() end}, 3).
+   1
+  
+   13:15:27.655132 &lt;0.44.0&gt; queue:in(a, {[],[]})
+  
+   13:15:27.655467 &lt;0.44.0&gt; queue:in/2 --&gt; {[a],[]}
+  
+   13:15:27.757921 &lt;0.44.0&gt; queue:in(a, {[],[]})
+   Recon tracer rate limit tripped.</pre><p>Matching on argument lists can be done in a more complex manner:</p><pre>   4&gt; recon_trace:calls(
+   4&gt;   {queue, '_', fun([A,_]) when is_list(A); is_integer(A) andalso A &gt; 1 -&gt; return_trace() end},
+   4&gt;   {10,100}
+   4&gt; ).
+   32
+  
+   13:24:21.324309 &lt;0.38.0&gt; queue:in(3, {[],[]})
+  
+   13:24:21.371473 &lt;0.38.0&gt; queue:in/2 --&gt; {[3],[]}
+  
+   13:25:14.694865 &lt;0.53.0&gt; queue:split(4, {[10,9,8,7],[1,2,3,4,5,6]})
+  
+   13:25:14.695194 &lt;0.53.0&gt; queue:split/2 --&gt; {{[4,3,2],[1]},{[10,9,8,7],[5,6]}}
+  
+   5&gt; recon_trace:clear().
+   ok</pre><p>Note that in the pattern above, no specific function (<code>'_'</code>) was matched against. Instead, the <code>fun</code> used restricted functions to those having two arguments, the first of which is either a list or an integer greater than <code>1</code>.</p><p>The limit was also set using <code>{10,100}</code> instead of an integer, making the rate-limitting at 10 messages per 100 milliseconds, instead of an absolute value.</p><p>Any tracing can be manually interrupted by calling <code>recon_trace:clear()</code>, or killing the shell process.</p><p>Be aware that extremely broad patterns with lax rate-limitting (or very high absolute limits) may impact your node's stability in ways <code>recon_trace</code> cannot easily help you with.</p><p>In doubt, start with the most restrictive tracing possible, with low limits, and progressively increase your scope.</p><p>See <a href="#calls/3" rel="https://erlang.org/doc/link/seemfa"><code>calls/3</code></a> for more details and tracing possibilities.</p><h3 id="module-structure" class="section-heading">
+  <a href="#module-structure" class="hover-link"><span class="icon-link" aria-hidden="true"></span></a>
+  <a name="Structure">Structure</a>
+</h3>
+<p>This library is production-safe due to taking the following structure for tracing:</p><pre>   [IO/Group leader] &lt;---------------------,
+     |                                     |
+   [shell] ---&gt; [tracer process] ----&gt; [formatter]</pre><p>The tracer process receives trace messages from the node, and enforces limits in absolute terms or trace rates, before forwarding the messages to the formatter. This is done so the tracer can do as little work as possible and never block while building up a large mailbox.</p><p>The tracer process is linked to the shell, and the formatter to the tracer process. The formatter also traps exits to be able to handle all received trace messages until the tracer termination, but will then shut down as soon as possible.</p><p>In case the operator is tracing from a remote shell which gets disconnected, the links between the shell and the tracer should make it so tracing is automatically turned off once you disconnect.</p><p>If sending output to the Group Leader is not desired, you may specify a different pid() via the option <code>io_server</code> in the <a href="#calls/3" rel="https://erlang.org/doc/link/seemfa"><code>calls/3</code></a> function. For instance to write the traces to a file you can do something like</p><pre>   1&gt; {ok, Dev} = file:open(&quot;/tmp/trace&quot;,[write]).
+   2&gt; recon_trace:calls({queue, in, fun(_) -&gt; return_trace() end}, 3, [{io_server, Dev}]).
+   1
+   3&gt;
+   Recon tracer rate limit tripped.
+   4&gt; file:close(Dev).</pre><p>The only output still sent to the Group Leader is the rate limit being tripped, and any errors. The rest will be sent to the other IO server (see <a href="http://erlang.org/doc/apps/stdlib/io_protocol.html" target="_top">http://erlang.org/doc/apps/stdlib/io_protocol.html</a>).</p><h3 id="module-record-printing" class="section-heading">
+  <a href="#module-record-printing" class="hover-link"><span class="icon-link" aria-hidden="true"></span></a>
+  <a name="Record_Printing">Record Printing</a>
+</h3>
+Thanks to code contributed by Bartek Górny, record printing can be added to traces by first importing records in an active session with <code>recon_rec:import([Module, ...])</code>, after which the records declared in the module list will be supported.        </section>
+
+        <section id="summary" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#summary">
+              <span class="icon-link" aria-hidden="true"></span>
+              <span class="sr-only">Link to this section</span>
+            </a>
+            Summary
+          </h1>
+  <div class="summary-types summary">
+    <h2>
+      <a href="#types">Types</a>
+    </h2>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:args/0">args()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:fn/0">fn
+  []
+end</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:formatterfun/0">formatterfun()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:matchspec/0">matchspec()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:max/0">max()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:max_rate/0">max_rate()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:max_traces/0">max_traces()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:millisecs/0">millisecs()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:mod/0">mod()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:num_matches/0">num_matches()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:options/0">options()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:pidspec/0">pidspec()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:shellfun/0">shellfun()</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:tspec/0">tspec()</a>
+  </div>
+</div>
+  </div>
+  <div class="summary-functions summary">
+    <h2>
+      <a href="#functions">Functions</a>
+    </h2>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#calls/2">calls(TSpecs, Max)</a>
+  </div>
+    <div class="summary-synopsis"><p>Equivalent to <a href="#calls/3" rel="https://erlang.org/doc/link/seemfa">calls({Mod, Fun, Args}, Max, [])</a>.</p></div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#calls/3">calls(TSpecs, Max, Opts)</a>
+  </div>
+    <div class="summary-synopsis"><p>Allows to set trace patterns and pid specifications to trace function calls.</p></div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#clear/0">clear()</a>
+  </div>
+    <div class="summary-synopsis">Stops all tracing at once.</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#extract_info/1">extract_info(TraceMsg)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format/1">format(TraceMsg)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_args/1">format_args(Arity)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_kv/4">format_kv(Recs, Maps, Key, Val)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_maybe_improper_list/3">format_maybe_improper_list(Recs, Maps, List)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_maybe_improper_list_/3">format_maybe_improper_list_(Recs, Maps, T)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_trace_output/1">format_trace_output(Args)</a>
+  </div>
+    <div class="summary-synopsis">formats call arguments and return values - most types are just printed out, except for tuples recognised as records, which mimic the source code syntax</div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_trace_output/2">format_trace_output(Recs, Args)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_trace_output/3">format_trace_output(Recs, Maps, Args)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_tuple/3">format_tuple(Recs, Maps, Tup)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#format_tuple_/3">format_tuple_(Recs, Maps, T)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#formatter/3">formatter(Tracer, IOServer, FormatterFun)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#fun_to_ms/1">fun_to_ms(ShellFun)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#join/2">join(Sep, List)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#maybe_kill/1">maybe_kill(Name)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#rate_tracer/4">rate_tracer(Max, Time, Count, Start)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#setup/4">setup(TracerFun, TracerArgs, FormatterFun, IOServer)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#to_hms/1">to_hms(Stamp)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#trace_calls/3">trace_calls(TSpecs, Pid, Opts)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#validate_formatter/1">validate_formatter(Opts)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#validate_io_server/1">validate_io_server(Opts)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#validate_opts/1">validate_opts(Opts)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#validate_pid_specs/1">validate_pid_specs(PidTerm)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#validate_tspec/3">validate_tspec(Mod, Fun, Args)</a>
+  </div>
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#wait_for_death/2">wait_for_death(Pid, Name)</a>
+  </div>
+</div>
+  </div>
+        </section>
+
+        <section id="types" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#types">
+              <span class="icon-link" aria-hidden="true"></span>
+              <span class="sr-only">Link to this section</span>
+            </a>
+Types          </h1>
+          <div class="types-list">
+<section class="detail" id="t:args/0">
+  <div class="detail-header">
+    <a href="#t:args/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">args()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.args/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:fn/0">
+  <div class="detail-header">
+    <a href="#t:fn/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">fn
+  []
+end</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.fn/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:formatterfun/0">
+  <div class="detail-header">
+    <a href="#t:formatterfun/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">formatterfun()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.formatterfun/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:matchspec/0">
+  <div class="detail-header">
+    <a href="#t:matchspec/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">matchspec()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.matchspec/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:max/0">
+  <div class="detail-header">
+    <a href="#t:max/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">max()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.max/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:max_rate/0">
+  <div class="detail-header">
+    <a href="#t:max_rate/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">max_rate()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.max_rate/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:max_traces/0">
+  <div class="detail-header">
+    <a href="#t:max_traces/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">max_traces()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.max_traces/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:millisecs/0">
+  <div class="detail-header">
+    <a href="#t:millisecs/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">millisecs()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.millisecs/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:mod/0">
+  <div class="detail-header">
+    <a href="#t:mod/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">mod()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.mod/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:num_matches/0">
+  <div class="detail-header">
+    <a href="#t:num_matches/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">num_matches()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.num_matches/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:options/0">
+  <div class="detail-header">
+    <a href="#t:options/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">options()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.options/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:pidspec/0">
+  <div class="detail-header">
+    <a href="#t:pidspec/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">pidspec()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.pidspec/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:shellfun/0">
+  <div class="detail-header">
+    <a href="#t:shellfun/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">shellfun()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.shellfun/0</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="t:tspec/0">
+  <div class="detail-header">
+    <a href="#t:tspec/0" class="detail-link" title="Link to this type">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this type</span>
+    </a>
+    <h1 class="signature">tspec()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>t:recon_trace.tspec/0</pre>
+      </div>
+
+  </section>
+</section>
+          </div>
+        </section>
+        <section id="functions" class="details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#functions">
+              <span class="icon-link" aria-hidden="true"></span>
+              <span class="sr-only">Link to this section</span>
+            </a>
+Functions          </h1>
+          <div class="functions-list">
+<section class="detail" id="calls/2">
+  <div class="detail-header">
+    <a href="#calls/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">calls(TSpecs, Max)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_trace.calls/2</pre>
+      </div>
+
+<p>Equivalent to <a href="#calls/3" rel="https://erlang.org/doc/link/seemfa">calls({Mod, Fun, Args}, Max, [])</a>.</p>  </section>
+</section>
+<section class="detail" id="calls/3">
+  <div class="detail-header">
+    <a href="#calls/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">calls(TSpecs, Max, Opts)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_trace.calls/3</pre>
+      </div>
+
+<p>Allows to set trace patterns and pid specifications to trace function calls.</p><p>The basic calls take the trace patterns as tuples of the form <code>{Module, Function, Args}</code> where:</p><ul><li><a href="https://hexdocs.pm/elixir/Module.html"><code>Module</code></a> is any atom representing a module</li><li><a href="https://hexdocs.pm/elixir/Function.html"><code>Function</code></a> is any atom representing a function, or the wildcard <code>'_'</code></li><li><code>Args</code> is either the arity of a function (<code>0..255</code>), a wildcard pattern (<code>'_'</code>), a <a href="http://learnyousomeerlang.com/ets#you-have-been-selected">match specification</a>, or a function from a shell session that can be transformed into a match specification</li></ul><p>There is also an argument specifying either a maximal count (a number) of trace messages to be received, or a maximal frequency (<code>{Num, Millisecs}</code>).</p><p>Here are examples of things to trace:</p><ul><li>All calls from the <code>queue</code> module, with 10 calls printed at most: <code>recon_trace:calls({queue, '_', '_'}, 10)</code></li><li>All calls to <code>lists:seq(A,B)</code>, with 100 calls printed at most: <code>recon_trace:calls({lists, seq, 2}, 100)</code></li><li>All calls to <code>lists:seq(A,B)</code>, with 100 calls per second at most: <code>recon_trace:calls({lists, seq, 2}, {100, 1000})</code></li><li>All calls to <code>lists:seq(A,B,2)</code> (all sequences increasing by two) with 100 calls at most: <code>recon_trace:calls({lists, seq, fun([_,_,2]) -&gt; ok end}, 100)</code></li><li>All calls to <code>iolist_to_binary/1</code> made with a binary as an argument already (kind of useless conversion!): <code>recon_trace:calls({erlang, iolist_to_binary, fun([X]) when is_binary(X) -&gt; ok end}, 10)</code></li><li>Calls to the queue module only in a given process <code>Pid</code>, at a rate of 50 per second at most: <code>recon_trace:calls({queue, '_', '_'}, {50,1000}, [{pid, Pid}])</code></li><li>Print the traces with the function arity instead of literal arguments: <code>recon_trace:calls(TSpec, Max, [{args, arity}])</code></li><li>Matching the <code>filter/2</code> functions of both <code>dict</code> and <code>lists</code> modules, across new processes only: <code>recon_trace:calls([{dict,filter,2},{lists,filter,2}], 10, [{pid, new}])</code></li><li>Tracing the <code>handle_call/3</code> functions of a given module for all new processes, and those of an existing one registered with <code>gproc</code>: <code>recon_trace:calls({Mod,handle_call,3}, {10,100}, [{pid, [{via, gproc, Name}, new]}</code></li><li>Show the result of a given function call: <code>recon_trace:calls({Mod,Fun,fun(_) -&gt; return_trace() end}, Max, Opts)</code> or <code>recon_trace:calls({Mod,Fun,[{'_', [], [{return_trace}]}]}, Max, Opts)</code>, the important bit being the <code>return_trace()</code> call or the <code>{return_trace}</code> match spec value. A short-hand version for this pattern of 'match anything, trace everything' for a function is <code>recon_trace:calls({Mod, Fun, return_trace})</code>.</li></ul><p>There's a few more combination possible, with multiple trace patterns per call, and more options:</p><ul><li><code>{pid, PidSpec}</code>: which processes to trace. Valid options is any of <code>all</code>, <code>new</code>, <code>existing</code>, or a process descriptor (<code>{A,B,C}</code>, <code>&quot;&lt;A.B.C&gt;&quot;</code>, an atom representing a name, <code>{global, Name}</code>, <code>{via, Registrar, Name}</code>, or a pid). It's also possible to specify more than one by putting them in a list.</li><li><code>{timestamp, formatter | trace}</code>: by default, the formatter process adds timestamps to messages received. If accurate timestamps are required, it's possible to force the usage of timestamps within trace messages by adding the option <code>{timestamp, trace}</code>.</li><li><code>{args, arity | args}</code>: whether to print arity in function calls or their (by default) literal representation.</li><li><code>{scope, global | local}</code>: by default, only 'global' (fully qualified function calls) are traced, not calls made internally. To force tracing of local calls, pass in <code>{scope, local}</code>. This is useful whenever you want to track the changes of code in a process that isn't called with <code>Module:Fun(Args)</code>, but just <code>Fun(Args)</code>.</li><li><code>{formatter, fun(Term) -&gt; io_data() end}</code>: override the default formatting functionality provided by recon.</li><li><code>{io_server, pid() | atom()}</code>: by default, recon logs to the current group leader, usually the shell. This option allows to redirect trace output to a different IO server (such as a file handle).</li><li><code>return_to</code>: If this option is set (in conjunction with the match option <code>{scope, local}</code>), the function to which the value is returned is output in a trace. Note that this is distinct from giving the *caller* since exception handling or calls in tail position may hide the original caller.</li></ul>Also note that putting extremely large <code>Max</code> values (i.e. <code>99999999</code> or <code>{10000,1}</code>) will probably negate most of the safe-guarding this library does and be dangerous to your node. Similarly, tracing extremely large amounts of function calls (all of them, or all of <code>io</code> for example) can be risky if more trace messages are generated than any process on the node could ever handle, despite the precautions taken by this library.  </section>
+</section>
+<section class="detail" id="clear/0">
+  <div class="detail-header">
+    <a href="#clear/0" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">clear()</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_trace.clear/0</pre>
+      </div>
+
+Stops all tracing at once.  </section>
+</section>
+<section class="detail" id="extract_info/1">
+  <div class="detail-header">
+    <a href="#extract_info/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">extract_info(TraceMsg)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format/1">
+  <div class="detail-header">
+    <a href="#format/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format(TraceMsg)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_args/1">
+  <div class="detail-header">
+    <a href="#format_args/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_args(Arity)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_kv/4">
+  <div class="detail-header">
+    <a href="#format_kv/4" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_kv(Recs, Maps, Key, Val)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_maybe_improper_list/3">
+  <div class="detail-header">
+    <a href="#format_maybe_improper_list/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_maybe_improper_list(Recs, Maps, List)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_maybe_improper_list_/3">
+  <div class="detail-header">
+    <a href="#format_maybe_improper_list_/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_maybe_improper_list_(Recs, Maps, T)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_trace_output/1">
+  <div class="detail-header">
+    <a href="#format_trace_output/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_trace_output(Args)</h1>
+  </div>
+
+  <section class="docstring">
+
+formats call arguments and return values - most types are just printed out, except for tuples recognised as records, which mimic the source code syntax  </section>
+</section>
+<section class="detail" id="format_trace_output/2">
+  <div class="detail-header">
+    <a href="#format_trace_output/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_trace_output(Recs, Args)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_trace_output/3">
+  <div class="detail-header">
+    <a href="#format_trace_output/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_trace_output(Recs, Maps, Args)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_tuple/3">
+  <div class="detail-header">
+    <a href="#format_tuple/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_tuple(Recs, Maps, Tup)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="format_tuple_/3">
+  <div class="detail-header">
+    <a href="#format_tuple_/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">format_tuple_(Recs, Maps, T)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="formatter/3">
+  <div class="detail-header">
+    <a href="#formatter/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">formatter(Tracer, IOServer, FormatterFun)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="fun_to_ms/1">
+  <div class="detail-header">
+    <a href="#fun_to_ms/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">fun_to_ms(ShellFun)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="join/2">
+  <div class="detail-header">
+    <a href="#join/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">join(Sep, List)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_trace.join/2</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="maybe_kill/1">
+  <div class="detail-header">
+    <a href="#maybe_kill/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">maybe_kill(Name)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="rate_tracer/4">
+  <div class="detail-header">
+    <a href="#rate_tracer/4" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">rate_tracer(Max, Time, Count, Start)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="setup/4">
+  <div class="detail-header">
+    <a href="#setup/4" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">setup(TracerFun, TracerArgs, FormatterFun, IOServer)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="to_hms/1">
+  <div class="detail-header">
+    <a href="#to_hms/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">to_hms(Stamp)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="trace_calls/3">
+  <div class="detail-header">
+    <a href="#trace_calls/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">trace_calls(TSpecs, Pid, Opts)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="validate_formatter/1">
+  <div class="detail-header">
+    <a href="#validate_formatter/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">validate_formatter(Opts)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="validate_io_server/1">
+  <div class="detail-header">
+    <a href="#validate_io_server/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">validate_io_server(Opts)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="validate_opts/1">
+  <div class="detail-header">
+    <a href="#validate_opts/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">validate_opts(Opts)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="validate_pid_specs/1">
+  <div class="detail-header">
+    <a href="#validate_pid_specs/1" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">validate_pid_specs(PidTerm)</h1>
+  </div>
+
+  <section class="docstring">
+      <h2>Specs</h2>
+      <div class="specs">
+          <pre>recon_trace.validate_pid_specs/1</pre>
+      </div>
+
+  </section>
+</section>
+<section class="detail" id="validate_tspec/3">
+  <div class="detail-header">
+    <a href="#validate_tspec/3" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">validate_tspec(Mod, Fun, Args)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+<section class="detail" id="wait_for_death/2">
+  <div class="detail-header">
+    <a href="#wait_for_death/2" class="detail-link" title="Link to this function">
+      <span class="icon-link" aria-hidden="true"></span>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature">wait_for_death(Pid, Name)</h1>
+  </div>
+
+  <section class="docstring">
+
+  </section>
+</section>
+          </div>
+        </section>
+      <footer class="footer">
+        <p>
+          <span class="line">
+            Built using
+            <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener">ExDoc</a> (v0.23.0) for the
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank">Elixir programming language</a>.
+          </span>
+          <span class="line">
+            Designed by
+            <a href="https://twitter.com/dignifiedquire" target="_blank" rel="noopener" title="@dignifiedquire">Friedel Ziegelmayer</a>.
+          </span>
+        </p>
+        <p>
+            <a href="api-reference.html" title="API reference" class="line footer-button">API Reference</a>
+          <button class="line footer-button display-shortcuts-help">
+            Display keyboard shortcuts
+          </button>
+          <button class="line footer-button night-mode-toggle">
+            Toggle night mode
+          </button>
+          <button class="line footer-button display-quick-switch">
+            Go to a HexDocs package
+          </button>
+          <button class="line footer-button tooltips-toggle">
+            <span class="tooltips-option-disable">Disable tooltips</span>
+            <span class="tooltips-option-enable">Enable tooltips</span>
+          </button>
+        </p>
+      </footer>
+    </div>
+  </div>
+</section>
+</div>
+  </body>
+</html>
